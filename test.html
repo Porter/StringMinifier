@@ -1,0 +1,97 @@
+<script src="test.js"></script>
+
+<p>su</p>
+<p id="su"><p>
+
+
+<p>sa</p>
+<p id="sa"><p>
+
+
+<p>B4</p>
+<p id="b4"><p>
+
+<br/>
+<p>After</p>
+<p id="after"><p>
+
+
+<p>B4 Locations</p>
+<p id="locations"><p>
+
+<br/>
+<p>Conversion</p>
+<p id="conversions"><p>
+
+<br/>
+<p>Packed1</p>
+<p id="pack1"><p>
+
+
+<br/>
+<p>Packed2</p>
+<p id="pack2"><p>
+
+<br/>
+<p>Unpacked2</p>
+<p id="unpack2"><p>
+
+
+<br/>
+<p>Unpacked1</p>
+<p id="unpack1"><p>
+
+<br/>
+<p>Expanded</p>
+<p id="expanded"><p>
+
+<script type="text/javascript">
+
+var b4 = "We have also come to this hallowed spot to remind America of the fierce urgency of Now. This is no time to engage in the luxury of cooling off or to take the tranquilizing drug of gradualism. Now is the time to make real the promises of democracy. Now is the time to rise from the dark and desolate valley of segregation to the sunlit path of racial justice. Now is the time to lift our nation from the quicksands of racial injustice to the solid rock of brotherhood. Now is the time to make justice a reality for all of God's children."
+
+var after = "We have also not blf also come to this hallowed spot to remind America of the fierce urgency of Now. This is no time to engage in the luxury of cooling off or to take the tranquilizing drug of gradualism. Now is the time to make real the promises of democracy. Now is the time to rise from the dark and desolate valley of segregation to the sunlit path of racial justice. Now is the time to lift our nation from the quicksands of racial injustice to the solid rock of brotherhood. Now is the time to make justice a reality for all of God's children.  f f f f f f f f f f f f f f f f f f f f f f f"
+
+
+document.getElementById('b4').innerHTML = b4;
+document.getElementById('after').innerHTML = after;
+
+b4_words = b4.split(' ');
+after_words = after.split(' ');
+
+locations = getB4Locations(b4_words);
+
+document.getElementById("locations").innerHTML = JSON.stringify(locations);
+
+conversion = condense(after_words, locations)
+document.getElementById("conversions").innerHTML = JSON.stringify(conversion);
+
+packed1 = pack1(conversion)
+document.getElementById("pack1").innerHTML = JSON.stringify(packed1);
+
+packed2 = pack2(packed1)
+document.getElementById("pack2").innerHTML = packed2;
+
+unpacked2 = unpack2(packed2)
+document.getElementById("unpack2").innerHTML = JSON.stringify(unpacked2);
+
+unpacked1 = unpack1(unpacked2)
+document.getElementById("unpack1").innerHTML = JSON.stringify(unpacked1);
+
+expanded = expand(unpacked1, b4_words);
+document.getElementById("expanded").innerHTML = expanded;
+
+
+test = "abc";
+su = zipString(test);
+document.getElementById("su").innerHTML = su;
+
+sa = unzipString(su)
+document.getElementById("sa").innerHTML = sa;
+
+//alert(test == sa);
+
+
+//alert(expanded == after)
+
+
+</script>
