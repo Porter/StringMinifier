@@ -1,3 +1,169 @@
+
+function rightMostBits(num, amount) {
+    return (num % Math.pow(2,amount))|0
+}
+
+function fromBin(arr) {
+	var num = 0, mult = 1;
+	for (var i = arr.length-1; i >= 0; i--) {
+		num += mult * arr[i];
+		mult *= 2;
+	}
+	return num;
+}
+
+function toBin(num) {
+	arr = [];
+	while (num > 0) {
+		arr.push(num%2);
+		num = (num/2) | 0;
+	}
+	arr.reverse();
+	return arr;
+}
+		
+
+function esc(ch) {
+	if (ch == '\\') {
+       		ch = "\\\\"
+	}
+	if (ch == chr(0)) {
+        	ch = "\\" + chr(0);
+	}
+   	return ch
+}
+
+function chr(num) {
+	return String.fromCharCode(num);
+}
+
+
+
+function range(str) {
+	var lowest = -1, highest = -1;
+	for (i in str) {
+		code = str.charCodeAt(i);
+		if (code == 32) { continue; }
+		if (code < lowest || lowest == -1) { lowest = code; }
+		if (code > highest || highest == -1) { highest = code; }
+	}
+
+	return [highest, lowest];
+}
+
+function makeLengthByPrependingZeros(arr, length) {
+	while (arr.length < length) {
+		arr.splice(0, 0, 0);
+	}
+	return arr;
+}
+
+function makeLengthByAppendingZeros(arr, length) {
+	while (arr.length < length) {
+		arr.push(0);
+	}
+	return arr;
+}
+
+function getNumberOfBits(num) {
+    if (num < 0) {
+        console.log("getNumberOfBits(num, amount) doesn't work with neg num");
+        return;
+    }
+    bits = 0;
+    while (num > 0) {
+	num = (num/2)|0;
+	bits++;
+    }
+    return bits;
+}
+
+function NumberOfBits(num) {
+	return getNumberOfBits(num);
+}
+
+
+function leftMostBits(num, amount, left) {
+    if (num == 0) { return 0; }
+    if (num < 0) {
+        console.log("leftMostBits(num, amount) doesn't work with neg num");
+        return;
+    }
+
+    length = left || getNumberOfBits(num);
+    
+    if (length - amount < 0) { return num; }
+    return (num / Math.pow(2, (length - amount)))|0
+}
+
+function getBit(num, bit) {
+	return ((num%Math.pow(2, bit)) / Math.pow(2, bit-1)) | 0;
+}
+
+function BitArray(length) {
+	this.uint8 = new Uint8Array(length);
+	this.size = 0;
+
+}
+
+BitArray.prototype.add = function(value, length, startFromLeft){
+	if (typeof(value) == "number") {
+		arr = makeLengthByAppendingZeros(toBin(value), 1);
+		if (length) {
+			if (startFromLeft) {
+				value = leftMostBits(value, length);
+			}
+			else {
+				value = rightMostBits(value, length);
+			}
+		}
+		else { length = arr.length; }
+		for (i = 0; i < length; i++) {
+			console.log(arr[i]);
+			this.uint8[(this.size/8)|0] += arr[i] * Math.pow(2, 7-(this.size%8));
+			this.size++;
+		}
+	}
+	if (typeof(value) == "string") {
+		for (i = 0; i < value.length; i++) {
+			this.add(value.charCodeAt(i));
+		}
+	}
+};
+
+BitArray.prototype.get = function(start, stop){
+	stop = stop|this.size
+	start = start|0
+	
+	arr = []
+	for (i = start; i < stop; i++) {
+		arr.push(getBit(this.uint8[(i/8)|0], 8-(i%8)));
+	}
+			
+	return arr;
+};
+
+
+BitArray.prototype.toString = function(){
+	str = ""
+	for (i = 0; i < (this.size/8)|0; i++) {
+		str += chr(this.uint8[i]);
+	}
+
+	if (this.size%8 != 0) {
+		last = this.uint8[ (this.size/8)|0 + 1 ];
+		last = fromBin(makeLengthByAppendingZeros(toBin(last), 8));
+		str += chr(last);
+	}
+	return str;
+	
+};
+
+
+BitArray.prototype.toArr = BitArray.prototype.get;
+
+
+
 function longestChain(numbers, start) {
 
     longest = []
@@ -118,75 +284,7 @@ function unpack1(packed) {
 	return unpacked;
 }
 
-function getNumberOfBits(num) {
-    if (num < 0) {
-        console.log("getNumberOfBits(num, amount) doesn't work with neg num");
-        return;
-    }
-    bits = 0;
-    while (num > 0) {
-	num = (num/2)|0;
-	bits++;
-    }
-    return bits;
-}
 
-function NumberOfBits(num) {
-	return getNumberOfBits(num);
-}
-
-
-function leftMostBits(num, amount, left) {
-    if (num == 0) { return 0; }
-    if (num < 0) {
-        console.log("leftMostBits(num, amount) doesn't work with neg num");
-        return;
-    }
-
-    length = left || getNumberOfBits(num);
-    
-    if (length - amount < 0) { return num; }
-    return (num / Math.pow(2, (length - amount)))|0
-}
-
-
-function rightMostBits(num, amount) {
-    return (num % Math.pow(2,amount))|0
-}
-
-function fromBin(arr) {
-	var num = 0, mult = 1;
-	for (var i = arr.length-1; i >= 0; i--) {
-		num += mult * arr[i];
-		mult *= 2;
-	}
-	return num;
-}
-
-function toBin(num) {
-	arr = [];
-	while (num > 0) {
-		arr.push(num%2);
-		num = (num/2) | 0;
-	}
-	arr.reverse();
-	return arr;
-}
-		
-
-function esc(ch) {
-	if (ch == '\\') {
-       		ch = "\\\\"
-	}
-	if (ch == chr(0)) {
-        	ch = "\\" + chr(0);
-	}
-   	return ch
-}
-
-function chr(num) {
-	return String.fromCharCode(num);
-}
 
 function pack2(unpacked) {
 	packed = "";
@@ -295,32 +393,6 @@ function unpack2(packed) {
 }
 
 
-function range(str) {
-	var lowest = -1, highest = -1;
-	for (i in str) {
-		code = str.charCodeAt(i);
-		if (code == 32) { continue; }
-		if (code < lowest || lowest == -1) { lowest = code; }
-		if (code > highest || highest == -1) { highest = code; }
-	}
-
-	return [highest, lowest];
-}
-
-function makeLengthByPrependingZeros(arr, length) {
-	while (arr.length < length) {
-		arr.splice(0, 0, 0);
-	}
-	return arr;
-}
-
-function makeLengthByAppendingZeros(arr, length) {
-	while (arr.length < length) {
-		arr.push(0);
-	}
-	return arr;
-}
-
 function getBits(str, startBits, bits) {
 
 	//console.log([str, startBits, bits]);
@@ -366,6 +438,7 @@ function zipString(str) {
 	var ran = 1 + r[0] - r[1];
 	var bits = NumberOfBits(ran);
 	var block = "";
+	var codes = [];
 	if (ran < 64) {
 		block += chr(128 + ran);
 		block += chr(drop);
@@ -374,62 +447,140 @@ function zipString(str) {
 			//console.log(code);
 			if (code == 32) { code = 0; }
 			else { code -= drop; }
-			bin = makeLengthByPrependingZeros(toBin(code), bits);
 			
-			//arr.push(1);
-console.log(bin.length);
-			for (b in bin) { arr.push(bin[b]); }
+			codes.push(code);
 		}
 	}
 	console.log('-----------------------------------------------------');
-	console.log(arr);
-	console.log(arr.length);
-	console.log(bits);
 	
-	var slice = arr.splice(0, 8);
-	while (slice.length > 0) {
-		block += chr(fromBin(makeLengthByAppendingZeros(slice, 8)))
+	console.log(codes);
 
-		console.log(makeLengthByAppendingZeros(slice, 8));
+	frequencies = {}
 
-		slice = arr.splice(0, 8);
+	for (c in codes) {
+		code = codes[c];
+		if (frequencies[code] == undefined) { frequencies[code] = 1; }
+		else { frequencies[code]++; }
 	}
 
-var d;
-bit = 16;
-	//while ((d = getBits(block, bit, 8)) != -1) {
-	//	console.log(d);
-	//	bit += 8;
+	tree = []
+	for (f in frequencies) {
+		tree.push([parseInt(frequencies[f]), parseInt(f)]);
+	}	
+
+	while (tree.length > 1) {
+		tree.sort(function(a, b) { return b[0] - a[0]; });
+
+
+		bottom = tree.splice(tree.length-2);
+		n = [bottom[0][0] + bottom[1][0], []]
+
 		
-	//}
+		n[1].push(bottom[0]);
+		n[1].push(bottom[1]);
+
+		tree.push(n);
+
+	}
+	
+	tree = tree[0];
+	console.log("modified: ");
+	console.log(JSON.stringify(tree));
 
 
-	while ((d = getBits(block, bit, bits)) != -1) {
-		console.log(d);
-		console.log(chr(fromBin(d) + drop));
-		bit += bits;		
+	message = [];
+
+	var num = 0;
+	t = tree;
+	while (t[1].length > 0 && typeof(t[1][0]) == "object") {
+		t = t[1][0];
+		num++;
+	}
+	console.log(num);
+
+	var pos = [], message = [];
+	for (var o = 0; o < num; o++) { pos.push(0); }
+
+
+	getNode = function(tree, pos) {
+		t = tree;
+		for (p in pos) {
+			t = t[1][pos[p]];
+		}
+		return t;
 	}
 
+	recorder = function(tree, pos, arr) {
+		node = getNode(tree, pos);
+
+		console.log(pos);
+
+		if (typeof(node[1]) == "number") {
+			console.log("Node: " + node[1]);
+			return;
+		}
+		
+		arr.add(0);
+
+		var cpy = pos.slice();
+
+
+
+		cpy.push(0);
+		test = JSON.stringify(cpy);
+		recorder(tree, cpy, arr);
+
+		cpy[cpy.length-1] = 1;
+		arr.add(1);
+		arr.add(0);
+
+		recorder(tree, cpy, arr);
+
+		arr.add(1);
+	}
+
+	message = new BitArray(1000);
+	recorder(tree, [], message);
+	console.log(message.toArr());
+	
+	console.log("---------------------------------------------");
 	return block;
 }
 
 
 
 function unzipString(str) {
-	return '';
 	var arr = [];
 
+
+	var bits;
+	if (leftMostBits(str.charCodeAt(0), 1) == 1) {
+		bits = NumberOfBits(rightMostBits(str.charCodeAt(0), 7)); 
+	}
+console.log(bits);
 	var drop = str.charCodeAt(1);
 	
-	var bit = 0;
-	var d;
-	while ((d = getBits(str, bit, 4)) != -1) {
-		//console.log( getBits(str, bit, bits));
-		bit += 4;
-		
+	var d, bit = 16, block = "";
+	
+	
+	var keepGoing = getBits(str, bit, 1)[0] == 1;
+	bit += 1;
+
+
+	while (keepGoing && (d = getBits(str, bit, bits)) != -1 ) {
+		console.log(d);
+		console.log(chr(fromBin(d) + drop));
+	
+		block += chr(fromBin(d) + drop);
+		bit += bits;
+
+		var keepGoing = getBits(str, bit, 1)[0] == 1;
+		bit += 1;
+	
+			
 	}
 
-	a = "";
-	return a;	
+
+	return block;	
 
 }
