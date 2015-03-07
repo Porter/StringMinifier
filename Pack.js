@@ -196,7 +196,6 @@ function zipString(str) {
 		block += chr(drop);
 		for (i in str) {
 			code = str.charCodeAt(i);
-			//console.log(code);
 			if (code == 32) { code = 0; }
 			else { code -= drop; }
 			
@@ -324,7 +323,6 @@ function unzipString(str) {
 	bitSize = 4;
 	var arr = [];
 	for (i in str) {
-		console.log(str[i].charCodeAt(0));
 		arr.push.apply(arr, makeLengthByPrependingZeros(toBin(str[i].charCodeAt(0)), 8));
 	}
 
@@ -356,13 +354,9 @@ function unzipString(str) {
 	for (var i = b, times = 0; i < arr.length && times < bits.length; i+= bitSize, times++) {
 		var a = [];
 		for (var n = i; n < i+bitSize; n++) {
-			//console.log(n);
 			a.push(arr[n]);
 		}
-		console.log(fromBin(a));
 	}
-
-
 
 	console.log(JSON.stringify(bits));
 
