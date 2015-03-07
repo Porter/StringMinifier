@@ -557,10 +557,13 @@ function zipString(str) {
 		return t;
 	}
 
+	var writePossibilities = [];
+
 	recorder = function(tree, pos, arr) {
 		node = getNode(tree, pos);
 
 		if (typeof(node[1]) == "number") {
+			writePossibilities.push(pos.slice());
 			return;
 		}
 		
@@ -605,6 +608,12 @@ function zipString(str) {
 		last = codes[c];
 	}
 
+	var map = {};
+	for (i in SortedCodes) {
+		map[SortedCodes[i]] = i;
+	}
+	console.log(JSON.stringify(map));
+
 	bitSize = 4;
 	
 	for (c in SortedCodes) {
@@ -614,6 +623,14 @@ function zipString(str) {
 			block += s.get(false);
 		}
 	}
+	
+	for (c in codes) {
+		var a = writePossibilities[ map[codes[c]] ];
+		for (i in a) { s.add(a[i]); block += s.get(false); }	
+
+	}
+
+	console.log(JSON.stringify(writePossibilities));
 
 	block += s.get(true);
 	console.log("---------------------------------------------");
@@ -655,15 +672,42 @@ function unzipString(str) {
 
 	b++;
 
-	for (var i = b, times = 0; i < arr.length && times < bits.length; i+= bitSize, times++) {
+	var i = b, writes = [];
+	for (times = 0; i < arr.length && times < bits.length; i+= bitSize, times++) {
 		var a = [];
 		for (var n = i; n < i+bitSize; n++) {
 			a.push(arr[n]);
 		}
+		writes.push(fromBin(a));
 	}
 
-	console.log(JSON.stringify(bits));
+	bitsNumerical = [];
+	for (bit in bits) {
+		bitsNumerical.push([fromBin(bits[bit]), bits[bit].length]);
+	}
 
+	var num = 0, length = 0, ch = "";
+	while (i < arr.length) {
+		num = num*2 + arr[i];
+		length++;
+
+		var index = -1;
+		for (n in bitsNumerical) { if (bitsNumerical[n][0] == num) { index = n; break; } }
+
+		console.log(index + ", " + length);
+	
+		if  (index != -1 && bitsNumerical[index][1] == length) {
+			console.log(writes[index]);
+			ch += ""+writes[index];
+			num = 0;
+			length = 0;
+		}
+		i++;
+	}
+	
+	console.log(JSON.stringify(bitsNumerical));
+
+	return ch;
 }
 
 
