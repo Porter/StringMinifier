@@ -1,4 +1,4 @@
-
+/** @constructor */
 function BitArray(length) {
 	this.uint8 = new Uint8Array(length);
 	this.size = 0;
