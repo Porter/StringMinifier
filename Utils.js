@@ -183,3 +183,12 @@ function getBits(str, startBits, bits) {
 	return a;
 	
 }
+
+function string2bits(str) {
+	var arr = [];
+	for (s in str) {
+		arr.push.apply(arr, makeLengthByPrependingZeros(toBin(str[s].charCodeAt(0)), 8));
+	}
+	return arr;
+}
+

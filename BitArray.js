@@ -23,11 +23,16 @@ BitArray.prototype.add = function(value, length, startFromLeft){
 			this.size++;
 		}
 	}
-	if (typeof(value) == "string") {
+	else if (typeof(value) == "string") {
 		for (i = 0; i < value.length; i++) {
-			this.add(value.charCodeAt(i));
+			var bleh = makeLengthByPrependingZeros(toBin(value.charCodeAt(i)));
+			this.add(bleh);
 		}
 	}
+	else if (typeof(value) == "object") { //it'd better be an array
+		value.forEach(function(v) { this.add(v); });
+	}
+		
 };
 
 BitArray.prototype.get = function(start, stop){
@@ -60,5 +65,46 @@ BitArray.prototype.toString = function(){
 
 
 BitArray.prototype.toArr = BitArray.prototype.get;
+
+
+
+
+
+
+
+
+
+
+/** @constructor */
+function StringStream(length) {
+	this.num = 0;
+	this.ch = '';
+	this.size = 0;
+}
+
+StringStream.prototype.add= function(number) {
+
+	this.num += number * Math.pow(2, 7-(this.size%8));
+	this.size++;
+	if (this.size == 8) {
+		this.ch = chr(this.num);
+	}
+};
+
+StringStream.prototype.get = function(force) {
+	if (force) {
+		if (this.size == 0) { return ''; }
+		return chr(this.num);
+	}
+
+	if (this.ch != '') {
+		this.num = 0;
+		this.size = 0;
+	}
+	var t = this.ch;
+	this.ch = '';
+	return t;
+};
+
 
 

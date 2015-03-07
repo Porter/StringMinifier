@@ -183,8 +183,6 @@ function unpack2(packed) {
 
 
 
-
-
 function zipString(str) {
 	var arr = [];
 	var r = range(str);
@@ -218,7 +216,7 @@ function zipString(str) {
 	tree = []
 	for (f in frequencies) {
 		tree.push([parseInt(frequencies[f]), parseInt(f)]);
-	}	
+	}
 
 	while (tree.length > 1) {
 		tree.sort(function(a, b) { return b[0] - a[0]; });
@@ -237,8 +235,6 @@ function zipString(str) {
 	
 	tree = tree[0];
 
-	message = [];
-
 	var num = 0;
 	t = tree;
 	while (t[1].length > 0 && typeof(t[1][0]) == "object") {
@@ -246,7 +242,7 @@ function zipString(str) {
 		num++;
 	}
 
-	var pos = [], message = [];
+	var pos = [];
 	for (var o = 0; o < num; o++) { pos.push(0); }
 
 
@@ -288,9 +284,52 @@ function zipString(str) {
 	recorder(tree, [], message);
 	arr = message.toArr();
 	console.log(arr);
+	
+	s = new StringStream();
+	block = "";
+	for (a in arr) {
+		s.add(arr[a]);
+		block += s.get(false);
+	}
 
-	var d = 'l', last = 0, t = [], bits = [];
-	for (b in arr) {
+
+	var SortedCodes = [];
+	codes.sort(function(a, b) { return frequencies[b] - frequencies[a]; });	
+
+	var last;
+	for (c in codes) {
+		if (last != codes[c]) { SortedCodes.push(codes[c]); }
+		last = codes[c];
+	}
+
+	bitSize = 4;
+	
+	for (c in SortedCodes) {
+		var a = makeLengthByPrependingZeros(toBin(SortedCodes[c]), bitSize);
+		for (i in a) {
+			s.add(a[i]);
+			block += s.get(false);
+		}
+	}
+
+	block += s.get(true);
+	console.log("---------------------------------------------");
+	return block;
+}
+
+
+
+function unzipString(str) {
+
+	bitSize = 4;
+	var arr = [];
+	for (i in str) {
+		console.log(str[i].charCodeAt(0));
+		arr.push.apply(arr, makeLengthByPrependingZeros(toBin(str[i].charCodeAt(0)), 8));
+	}
+
+	var d = 'l', currentSide = 'l', last = 0, t = [], bits = [], b = 0;
+	while (b < arr.length) {	
 		bit = arr[b];
 		if (bit == 0) {
 			t.push(d == 'l' ? 0 : 1);
@@ -300,52 +339,33 @@ function zipString(str) {
 			if (last == 0) {
 				bits.push(t.slice()); // copy of t
 			}
+			
 			t.pop();
+			if (t.length == 0) {
+				if (currentSide == 'l') { currentSide = 'r'; }
+				else { break; }
+			}
 			d = 'r';
 		}
 		last = bit;
+		b++;
 	}
+
+	b++;
+
+	for (var i = b, times = 0; i < arr.length && times < bits.length; i+= bitSize, times++) {
+		var a = [];
+		for (var n = i; n < i+bitSize; n++) {
+			//console.log(n);
+			a.push(arr[n]);
+		}
+		console.log(fromBin(a));
+	}
+
+
+
 	console.log(JSON.stringify(bits));
-	
-	console.log("---------------------------------------------");
-	return block;
-}
-
-
-
-function unzipString(str) {
-	var arr = [];
-
-
-	var bits;
-	if (leftMostBits(str.charCodeAt(0), 1) == 1) {
-		bits = NumberOfBits(rightMostBits(str.charCodeAt(0), 7)); 
-	}
-console.log(bits);
-	var drop = str.charCodeAt(1);
-	
-	var d, bit = 16, block = "";
-	
-	
-	var keepGoing = getBits(str, bit, 1)[0] == 1;
-	bit += 1;
-
-
-	while (keepGoing && (d = getBits(str, bit, bits)) != -1 ) {
-		console.log(d);
-		console.log(chr(fromBin(d) + drop));
-	
-		block += chr(fromBin(d) + drop);
-		bit += bits;
-
-		var keepGoing = getBits(str, bit, 1)[0] == 1;
-		bit += 1;
-	
-			
-	}
-
-
-	return block;	
 
 }
+
 
