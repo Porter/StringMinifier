@@ -182,27 +182,23 @@ function unpack2(packed) {
 }
 
 
-
 function zipString(str) {
 	var arr = [];
 	var r = range(str);
 	var drop = r[1] - 1;
 	var ran = 1 + r[0] - r[1];
 	var bits = NumberOfBits(ran);
-	var block = "";
 	var codes = [];
-	if (ran < 64) {
-		block += chr(128 + ran);
-		block += chr(drop);
-		for (i in str) {
-			code = str.charCodeAt(i);
-			if (code == 32) { code = 0; }
-			else { code -= drop; }
-			
-			codes.push(code);
-		}
+	for (i in str) {
+		code = str.charCodeAt(i);
+		if (code == 32) { code = 0; }
+		else { code -= drop; }
+		
+		codes.push(code);
 	}
 	console.log('-----------------------------------------------------');
+	console.log(codes);
+	
 	
 	frequencies = {}
 
@@ -285,10 +281,9 @@ function zipString(str) {
 	message = new BitArray(1000);
 	recorder(tree, [], message);
 	arr = message.toArr();
-	console.log(arr);
 	
 	s = new StringStream();
-	block = "";
+	var block = chr(drop);
 	for (a in arr) {
 		s.add(arr[a]);
 		block += s.get(false);
@@ -296,22 +291,26 @@ function zipString(str) {
 
 
 	var SortedCodes = [];
-	codes.sort(function(a, b) { return frequencies[b] - frequencies[a]; });	
+	codesCopy = Object.keys(frequencies);
+	codesCopy.sort(function(a, b) { return frequencies[b] - frequencies[a]; });
+
+	console.log("codesCopy: " + JSON.stringify(codesCopy));	
+	console.log("freq: " + JSON.stringify(frequencies));	
 
 	var last;
-	for (c in codes) {
-		if (last != codes[c]) { SortedCodes.push(codes[c]); }
-		last = codes[c];
+	for (c in codesCopy) {
+		if (last != codesCopy[c]) { SortedCodes.push(codesCopy[c]); }
+		last = codesCopy[c];
 	}
 
 	var map = {};
 	for (i in SortedCodes) {
 		map[SortedCodes[i]] = i;
 	}
-	console.log(JSON.stringify(map));
 
-	bitSize = 4;
+	bitSize = bits;
 	
+	console.log(JSON.stringify(SortedCodes));
 	for (c in SortedCodes) {
 		var a = makeLengthByPrependingZeros(toBin(SortedCodes[c]), bitSize);
 		for (i in a) {
@@ -320,15 +319,19 @@ function zipString(str) {
 		}
 	}
 	
+	
+
 	for (c in codes) {
 		var a = writePossibilities[ map[codes[c]] ];
 		for (i in a) { s.add(a[i]); block += s.get(false); }	
 
 	}
 
-	console.log(JSON.stringify(writePossibilities));
-
+	var data = bitSize * Math.pow(2, 5); // bitSize is 3 bits, shift it right 5
+	data += ((8 - s.size) % 8) * Math.pow(2, 2); // is 0-7 (3 bits), shifted right 2
+	
 	block += s.get(true);
+	block += chr(data);
 	console.log("---------------------------------------------");
 	return block;
 }
@@ -337,11 +340,20 @@ function zipString(str) {
 
 function unzipString(str) {
 
-	bitSize = 4;
+	end = str.charCodeAt(str.length-1);
+	start = str.charCodeAt(0);
+
+	var bitSize = leftMostBits(end, 3);
+	var cutOff = rightMostBits( leftMostBits(end, 6), 3);
+
+	str = str.substring(1, str.length-1);
+
 	var arr = [];
 	for (i in str) {
 		arr.push.apply(arr, makeLengthByPrependingZeros(toBin(str[i].charCodeAt(0)), 8));
 	}
+
+	arr.splice(arr.length - cutOff, cutOff); // delete cutOff amount of bits from the end
 
 	var d = 'l', currentSide = 'l', last = 0, t = [], bits = [], b = 0;
 	while (b < arr.length) {	
@@ -365,8 +377,8 @@ function unzipString(str) {
 		last = bit;
 		b++;
 	}
-
 	b++;
+
 
 	var i = b, writes = [];
 	for (times = 0; i < arr.length && times < bits.length; i+= bitSize, times++) {
@@ -377,10 +389,14 @@ function unzipString(str) {
 		writes.push(fromBin(a));
 	}
 
+	console.log(JSON.stringify(writes));
+	console.log(JSON.stringify(arr.slice(i)));
+
 	bitsNumerical = [];
 	for (bit in bits) {
 		bitsNumerical.push([fromBin(bits[bit]), bits[bit].length]);
 	}
+	console.log(JSON.stringify(bitsNumerical));
 
 	var num = 0, length = 0, ch = "";
 	while (i < arr.length) {
@@ -388,21 +404,19 @@ function unzipString(str) {
 		length++;
 
 		var index = -1;
-		for (n in bitsNumerical) { if (bitsNumerical[n][0] == num) { index = n; break; } }
+		for (var n in bitsNumerical) { 
+			if (bitsNumerical[n][0] == num && bitsNumerical[n][1] == length) { index = n; break; }
+		}
 
-		console.log(index + ", " + length);
-	
-		if  (index != -1 && bitsNumerical[index][1] == length) {
-			console.log(writes[index]);
-			ch += ""+writes[index];
+		if  (index != -1) {
+			console.log(index + ", " +writes[index]);
+			ch += ""+ writes[index] == 0 ? " " : chr(writes[index] + start);
 			num = 0;
 			length = 0;
 		}
 		i++;
 	}
 	
-	console.log(JSON.stringify(bitsNumerical));
-
 	return ch;
 }
 
