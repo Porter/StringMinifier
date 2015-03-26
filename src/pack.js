@@ -34,6 +34,8 @@ function pack1(condensed) {
 	start = 0;
 	super_condensed = [];
 
+	console.log("C: " + JSON.stringify(condensed));
+
 	while (start < condensed.length) {
 	    longest = longestChain(condensed, start)
 
@@ -41,6 +43,7 @@ function pack1(condensed) {
 		console.log("longest is 0, that's a problem");
 		break;	    
 	    }
+	    console.log(longest);
 
 	    start += longest.length;
 
@@ -91,11 +94,25 @@ function pack2(unpacked) {
 	var mod = 0;
 
 	var toConvert = [];
+	var arrayInARow = false;
 
 	for (i in unpacked) {
 		var p = unpacked[i];
 		if (p instanceof Array) {
-			if (pos != p[0]) {
+			if (p[0] == p[1] || false) {
+				console.log("SA");
+				toConvert.push([[0, 1], false, false]) // additionn
+				toConvert.push([toBin(pos+1+mod), true, false]);
+				toConvert.push([toBin(p[0]), true, false]);
+				toConvert.push([toBin(1), true, false]);
+
+				var m = NumberOfBits(Math.max(pos+1+mod, p[0], 1));
+				if (m > size) { size = m; }	
+
+				mod++;
+			}
+
+			else if (arrayInARow) {
 				diff = p[0] - pos;
 				
 
@@ -130,12 +147,13 @@ function pack2(unpacked) {
 						if (m > size) { size = m; }	
 
 						mod -= diff;
-					}	
+					}
 				}			
 			}
 
 			pos = p[1];
 			if (pos > largest) { largest = pos; }
+			arrayInARow = true;
 		}
 		else {
 
@@ -149,6 +167,7 @@ function pack2(unpacked) {
 			if (m > size) { size = m; }
 			
 			mod += p.split(' ').length;
+			arrayInARow = false;
 		}
 	}
 

@@ -15,6 +15,8 @@ Minifier.prototype.condense = function(){
 	this.data = getB4Locations(this.b4_words);
 	this.data = condense(this.after_words, this.data);
 	this.data = pack1(this.data);
+	console.log(this.data);
+
 	this.data = pack2(this.data);
 	
 	return this.data;
@@ -22,6 +24,7 @@ Minifier.prototype.condense = function(){
 
 
 Minifier.prototype.uncondense = function(){
+
 	
 	this.data = unpack2(this.data, this.b4_words);
 

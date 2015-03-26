@@ -66,16 +66,7 @@ function makeLengthByAppendingZeros(arr, length) {
 }
 
 function getNumberOfBits(num) {
-    if (num < 0) {
-        console.log("getNumberOfBits(num, amount) doesn't work with neg num");
-        return;
-    }
-    bits = 0;
-    while (num > 0) {
-	num = (num/2)|0;
-	bits++;
-    }
-    return bits;
+   return toBin(num).length;
 }
 
 function NumberOfBits(num) {
@@ -154,7 +145,7 @@ function getBits(str, startBits, bits) {
 
 	loc = (startBits / 8) | 0;
 	startBits = startBits % 8;
-	a = [];
+	var a = [];
 
 
 	while (bits > 0) {
@@ -172,8 +163,8 @@ function getBits(str, startBits, bits) {
 		//console.log("left: " + toBin(left));
 		
 		
-		n = makeLengthByPrependingZeros(toBin(left), amount);
-		for (i in n) { a.push(n[i]); }
+		var n = makeLengthByPrependingZeros(toBin(left), amount);
+		for (var i = 0; i < n.length; i++) { a.push(n[i]); }
 
 		bits -= amount;
 		startBits = 0;
@@ -292,7 +283,11 @@ StringStream.prototype.addArr= function(arr) {
 
 StringStream.prototype.get = function(force) {
 	if (force) {
-		if (this.size == 0 && this.num == 0) { return this.ch; }
+		if (this.size == 0 && this.num == 0) {
+			var t = this.ch;
+			this.ch = '';
+			return t;
+		}
 
 		var c = this.ch + chr(this.num);
 		this.num = 0;
@@ -344,6 +339,8 @@ function pack1(condensed) {
 	start = 0;
 	super_condensed = [];
 
+	console.log("C: " + JSON.stringify(condensed));
+
 	while (start < condensed.length) {
 	    longest = longestChain(condensed, start)
 
@@ -351,6 +348,7 @@ function pack1(condensed) {
 		console.log("longest is 0, that's a problem");
 		break;	    
 	    }
+	    console.log(longest);
 
 	    start += longest.length;
 
@@ -401,20 +399,38 @@ function pack2(unpacked) {
 	var mod = 0;
 
 	var toConvert = [];
+	var arrayInARow = false;
 
 	for (i in unpacked) {
 		var p = unpacked[i];
 		if (p instanceof Array) {
-			if (pos != p[0]) {
+			if (p[0] == p[1] || false) {
+				console.log("SA");
+				toConvert.push([[0, 1], false, false]) // additionn
+				toConvert.push([toBin(pos+1+mod), true, false]);
+				toConvert.push([toBin(p[0]), true, false]);
+				toConvert.push([toBin(1), true, false]);
+
+				var m = NumberOfBits(Math.max(pos+1+mod, p[0], 1));
+				if (m > size) { size = m; }	
+
+				mod++;
+			}
+
+			else if (arrayInARow) {
 				diff = p[0] - pos;
 				
+
+
 				if (diff > 0) {
 					
 					diff--;
+
 					if (diff > 0) {
-						toConvert.push([[1, 0], false]) // delete
-						toConvert.push([toBin(pos + 1 + mod), true]);
-						toConvert.push([toBin(diff), true]);
+						console.log("D" + diff);
+						toConvert.push([[1, 0], false, false]) // delete
+						toConvert.push([toBin(pos + 1 + mod), true, false]);
+						toConvert.push([toBin(diff), true, false]);
 
 						var m = NumberOfBits(Math.max(pos+1+mod, diff));
 						if (m > size) { size = m; }	
@@ -424,47 +440,58 @@ function pack2(unpacked) {
 				}
 				else {
 					diff--;
-					var length = 1 + p[1] - pos;
+					if (diff < 0) {
+						console.log("A" + diff);
 
+						toConvert.push([[0, 1], false, false]) // additionn
+						toConvert.push([toBin(pos+1+mod), true, false]);
+						toConvert.push([toBin(p[0]), true, false]);
+						toConvert.push([toBin(-diff), true, false]);
 
-					toConvert.push([[0, 1], false]) // additionn
-					toConvert.push([toBin(pos+1+mod), true]);
-					toConvert.push([toBin(p[0]), true]);
-					toConvert.push([toBin(-diff), true]);
+						var m = NumberOfBits(Math.max(pos+1+mod, p[0], -diff));
+						if (m > size) { size = m; }	
 
-					var m = NumberOfBits(Math.max(pos+1+mod, p[0]+mod, length));
-					if (m > size) { size = m; }	
-
-					mod -= diff;	
+						mod -= diff;
+					}
 				}			
 			}
 
 			pos = p[1];
 			if (pos > largest) { largest = pos; }
+			arrayInARow = true;
 		}
 		else {
 
-			toConvert.push([[1, 1], false]) // adding string
-			toConvert.push([toBin(pos+1 + mod), true]);
+			console.log("A" + p);
+
+			toConvert.push([[1, 1], false, false]) // adding string
+			toConvert.push([toBin(pos+1 + mod), true, false]);
 			toConvert.push([toBin(p.length), true, true, p]);
+
+			var m = NumberOfBits(Math.max(pos+1+mod, p.length));
+			if (m > size) { size = m; }
 			
 			mod += p.split(' ').length;
+			arrayInARow = false;
 		}
 	}
 
 
+	console.log("size: " + size);
+	size = size;
 	packed = chr(size);
+	console.log(JSON.stringify(toConvert));
 	for (var i = 0; i < toConvert.length; i++) {
 		toC = toConvert[i];
 		if (toC[1]) {
 			s.addArr(makeLengthByPrependingZeros(toC[0], size));
 			packed += s.get(toC[2]);
 			if (toC[2]) { packed += toC[3]; }
-		}
+					}
 		else {
 			s.addArr(toC[0]);
-			packed += s.get(toC[2]);
-		}	
+			packed += s.get();
+		}
 	}
 
 	packed += s.get(true);	
@@ -480,13 +507,15 @@ function unpack2(packed, b4) {
     var totalLen = packed.charCodeAt(packed.length-1);
     packed = packed.slice(0, packed.length-1);
 
+    console.log("tot len: " + totalLen);
+
     toR = toR.slice(0, totalLen);
 
     for (var i = 8; i < (packed.length) * 8;) {
         
 	var mode = fromBin(getBits(packed, i, 2));
 	i += 2;
-
+	console.log("mode: " + mode);
 	if (mode == 1) { // add from origin
 
 
@@ -496,7 +525,8 @@ function unpack2(packed, b4) {
 		i += size;
 		var length = fromBin(getBits(packed, i, size));
 		i += size;
-
+		
+		console.log("adding (" + pos + ", " + size + ") at " + insertAt + ": " + b4.slice(pos, pos+length));
 
 		toR = toR.slice(0,insertAt).concat(b4.slice(pos, pos+length)).concat(toR.slice(insertAt));
 
@@ -508,9 +538,12 @@ function unpack2(packed, b4) {
 		var diff = fromBin(getBits(packed, i, size));
 		i += size;
 
+		console.log("pos: " + pos + " length: " + diff + " deleting: " + toR.splice(pos, diff));
+
 	}
 
 	if (mode == 3) { // add string
+		
 		var pos = fromBin(getBits(packed, i, size));
 		i += size;
 		var length = fromBin(getBits(packed, i, size));
@@ -518,7 +551,9 @@ function unpack2(packed, b4) {
 		
 		i += (8 - (i % 8)) % 8; // round up to the nearest multiple of 8
 		
-		string = packed.slice(i/8, i/8 + length)
+		var string = packed.slice(i/8, i/8 + length)
+
+		console.log("adding string: " + string);
 
 		toR = toR.slice(0,pos).concat(string.split(' ')).concat(toR.slice(pos));		
 		i += length*8;
@@ -784,13 +819,17 @@ Minifier.prototype.condense = function(){
 	
 	this.data = getB4Locations(this.b4_words);
 	this.data = condense(this.after_words, this.data);
-	this.data = pack2(pack1(this.data));
+	this.data = pack1(this.data);
+	console.log(this.data);
+
+	this.data = pack2(this.data);
 	
 	return this.data;
 };
 
 
 Minifier.prototype.uncondense = function(){
+
 	
 	this.data = unpack2(this.data, this.b4_words);
 
