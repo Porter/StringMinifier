@@ -99,7 +99,7 @@ function pack2(unpacked) {
 	for (i in unpacked) {
 		var p = unpacked[i];
 		if (p instanceof Array) {
-			if (arrayInARow) {
+			if (arrayInARow || p[0] != pos) {
 				diff = p[0] - pos;
 				
 
@@ -107,7 +107,7 @@ function pack2(unpacked) {
 				if (diff > 0) {
 					
 					diff--;
-					if (diff > 0) {
+					if (diff > 0 || true) {
 						console.log("D" + diff);
 						toConvert.push([[1, 0], false, false]) // delete
 						toConvert.push([toBin(pos + 1 + mod), true, false]);

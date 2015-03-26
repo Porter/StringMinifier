@@ -31,7 +31,7 @@
 	
 	
 
-	var b4 = "This was before"
+	var b4 = "this was before"
 
 	
 
@@ -56,7 +56,7 @@
 		m = new Minifier(document.getElementById('b4').value, document.getElementById('after').value);
 		data = m.condense();
 		
-		var back = m.uncondense();
+		var back = m.uncondense(data);
 		
 		document.getElementById('mini').value = back;
 		equal();

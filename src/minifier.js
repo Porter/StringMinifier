@@ -404,7 +404,7 @@ function pack2(unpacked) {
 	for (i in unpacked) {
 		var p = unpacked[i];
 		if (p instanceof Array) {
-			if (arrayInARow) {
+			if (arrayInARow || p[0] != pos) {
 				diff = p[0] - pos;
 				
 
@@ -412,8 +412,7 @@ function pack2(unpacked) {
 				if (diff > 0) {
 					
 					diff--;
-
-					if (diff > 0) {
+					if (diff > 0 || true) {
 						console.log("D" + diff);
 						toConvert.push([[1, 0], false, false]) // delete
 						toConvert.push([toBin(pos + 1 + mod), true, false]);
@@ -815,8 +814,13 @@ Minifier.prototype.condense = function(){
 };
 
 
-Minifier.prototype.uncondense = function(){
+Minifier.prototype.uncondense = function(Data, source){
 
+	this.data = Data | this.data;
+	if (source) {
+		this.b4 = source;
+		this.b4_words = source.split(' ');
+	}
 	
 	this.data = unpack2(this.data, this.b4_words);
 

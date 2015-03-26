@@ -23,8 +23,13 @@ Minifier.prototype.condense = function(){
 };
 
 
-Minifier.prototype.uncondense = function(){
+Minifier.prototype.uncondense = function(Data, source){
 
+	this.data = Data | this.data;
+	if (source) {
+		this.b4 = source;
+		this.b4_words = source.split(' ');
+	}
 	
 	this.data = unpack2(this.data, this.b4_words);
 
