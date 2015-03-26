@@ -66,16 +66,7 @@ function makeLengthByAppendingZeros(arr, length) {
 }
 
 function getNumberOfBits(num) {
-    if (num < 0) {
-        console.log("getNumberOfBits(num, amount) doesn't work with neg num");
-        return;
-    }
-    bits = 0;
-    while (num > 0) {
-	num = (num/2)|0;
-	bits++;
-    }
-    return bits;
+   return toBin(num).length;
 }
 
 function NumberOfBits(num) {
@@ -154,7 +145,7 @@ function getBits(str, startBits, bits) {
 
 	loc = (startBits / 8) | 0;
 	startBits = startBits % 8;
-	a = [];
+	var a = [];
 
 
 	while (bits > 0) {
@@ -172,8 +163,8 @@ function getBits(str, startBits, bits) {
 		//console.log("left: " + toBin(left));
 		
 		
-		n = makeLengthByPrependingZeros(toBin(left), amount);
-		for (i in n) { a.push(n[i]); }
+		var n = makeLengthByPrependingZeros(toBin(left), amount);
+		for (var i = 0; i < n.length; i++) { a.push(n[i]); }
 
 		bits -= amount;
 		startBits = 0;

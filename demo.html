@@ -1,4 +1,4 @@
-<script src="src/test.js"></script>
+<script src="src/minifier-min.js"></script>
 
 
 
@@ -16,16 +16,13 @@
 <label>You can make edits</label><br/>
 <textarea id="after" style="width:800px; height:100px;"></textarea>
 
-<br/>
-<button onclick="calc();">Minify</button>
 
-<br/><br/>
+
+<br/><br/><br/>
 
 <label id="label">Mini</label>
-<button disabled id='more' onclick="more();">More</button>
-<Button disabled id='less' onclick="less();">Less</button>
-<Button id='equal' onclick="equal();">Equal</button>
 <Button id='test' onclick="test();">Test</button>
+<Button id='show' onclick="show();">Show data</button>
 <br/>
 <textarea id="mini" style="width:800px; height:100px;"></textarea>
 
@@ -34,55 +31,35 @@
 	
 	
 
-	var b4 = "But we refuse to believe that the bank of justice is bankrupt. We refuse to believe that there are insufficient funds in the great vaults of opportunity of this nation. And so, we've come to cash this check, a check that will give us upon demand the riches of freedom and the security of justice."
+	var b4 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin eleifend volutpat justo. Cras efficitur dui et leo pretium, feugiat rhoncus quam mattis. Pellentesque non lorem euismod, ornare diam eu, lacinia nulla. Phasellus consectetur a sapien a facilisis. Pellentesque sit amet finibus turpis. Mauris quis viverra nunc. In volutpat enim quis tincidunt viverra. Nunc scelerisque fermentum lorem in feugiat. Quisque ac orci suscipit, finibus sem at, mattis sem. Nullam vel venenatis enim, a congue libero. Nunc vel odio gravida, finibus urna sed, pretium ex. Proin suscipit ex id orci mollis tempor. Cras maximus at odio vitae blandit."
 
 	
 
-	var level = 0, data, after_words, b4_words;
-	var m;
+	var data, m;
 
-	function compare() {
-		document.getElementById('label').innerHTML = document.getElementById('after').value.length + " -> " +
-		document.getElementById('mini').value.length;
+	function compare(start, end) {
+		document.getElementById('label').innerHTML = start + " -> " + end + " chars";
 	}
 
-	function test() {
-		calc();
-		more();
-		less();
-		equal();
-	}
 
 	function equal() {
 		alert(document.getElementById('mini').value === document.getElementById('after').value);
 	}
 
 
-
-	function more() {
-		m.condense();
-		document.getElementById('mini').value = m.getData();
-		
-		document.getElementById('more').disabled = !m.canCompressMore();
-		document.getElementById('less').disabled = !m.canUncompressMore();
-		compare();
-		
+	function show() {
+		document.getElementById('mini').value = data;
 	}
 
-	function less() {
-		m.uncondense();
-		document.getElementById('mini').value = m.getData();
-		
-		document.getElementById('more').disabled = !m.canCompressMore();
-		document.getElementById('less').disabled = !m.canUncompressMore();
-		compare();
-	}
-
-	function calc() {
+	function test() {
 		
 		m = new Minifier(document.getElementById('b4').value, document.getElementById('after').value);
-		more();
+		data = m.condense();
 		
+		var back = m.uncondense();
+		
+		document.getElementById('mini').value = back;
+		equal();
 	}
 
 
@@ -97,32 +74,9 @@ document.getElementById('b4').value = b4;
 document.getElementById('after').value = b4;
 
 
-conversion = " "
-document.getElementById("conversions").innerHTML = JSON.stringify(conversion);
-
-packed1 = pack1(conversion)
-document.getElementById("pack1").innerHTML = JSON.stringify(packed1);
-
-packed2 = pack2(packed1)
-document.getElementById("pack2").innerHTML = packed2;
-
-unpacked2 = unpack2(packed2)
-document.getElementById("unpack2").innerHTML = JSON.stringify(unpacked2);
-
-unpacked1 = unpack1(unpacked2)
-document.getElementById("unpack1").innerHTML = JSON.stringify(unpacked1);
-
-expanded = expand(unpacked1, b4_words);
-document.getElementById("expanded").innerHTML = expanded;
-
-
-test = "We have also not blf also come to this hallowed spot to remind America of the fierce urgency of Now. This is no time to engage in the luxury of cooling off or to take the tranquilizing drug of gradualism. Now is the time to make real the promises of democracy. Now is the time to rise from the dark and desolate valley of segregation to the sunlit path of racial justice. Now is the time to lift our nation from the quicksands of racial injustice to the solid rock of brotherhood. Now is the time to make justice a reality for all of God's children. ";
-su = zipString(test);
-document.getElementById("su").innerHTML = su;
-
-sa = unzipString(su)
-document.getElementById("sa").innerHTML = sa;
-
+//test = "We have also not blf also come to this hallowed spot to remind America of the fierce urgency of Now. This is no time to engage in the luxury of cooling off or to take the tranquilizing drug of gradualism. Now is the time to make real the promises of democracy. Now is the time to rise from the dark and desolate valley of segregation to the sunlit path of racial justice. Now is the time to lift our nation from the quicksands of racial injustice to the solid rock of brotherhood. Now is the time to make justice a reality for all of God's children. ";
+//su = zipString(test);
+//sa = unzipString(su)
 //alert(test == sa);
 
 

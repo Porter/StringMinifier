@@ -98,7 +98,11 @@ StringStream.prototype.addArr= function(arr) {
 
 StringStream.prototype.get = function(force) {
 	if (force) {
-		if (this.size == 0 && this.num == 0) { return this.ch; }
+		if (this.size == 0 && this.num == 0) {
+			var t = this.ch;
+			this.ch = '';
+			return t;
+		}
 
 		var c = this.ch + chr(this.num);
 		this.num = 0;
