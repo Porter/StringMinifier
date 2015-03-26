@@ -1,5 +1,8 @@
 /** @constructor */
 function Minifier(b4, after) {
+	b4 = b4 | "";
+	after = after || "";
+
 	this.b4 = b4;
 	this.after = after;
 
