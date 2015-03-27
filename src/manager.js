@@ -1,13 +1,10 @@
 /** @constructor */
 function Minifier(b4, after) {
-	b4 = b4 | "";
-	after = after || "";
+	this.b4 = b4 || "";
+	this.after = after || "";
 
-	this.b4 = b4;
-	this.after = after;
-
-	this.b4_words = b4.split(' ');
-	this.after_words = after.split(' ');
+	this.b4_words = this.b4.split(' ');
+	this.after_words = this.after.split(' ');
 
 	this.level = 0;
 	this.data = b4;
@@ -28,7 +25,7 @@ Minifier.prototype.condense = function(){
 
 Minifier.prototype.uncondense = function(Data, source){
 
-	this.data = Data | this.data;
+	this.data = Data || this.data;
 	if (source) {
 		this.b4 = source;
 		this.b4_words = source.split(' ');

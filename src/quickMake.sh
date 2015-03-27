@@ -1,3 +1,5 @@
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+cd $DIR
 if [ -f compiler.jar ];
 then
    cat Utils.js BitArray.js Pack.js manager.js > minifier-min.js

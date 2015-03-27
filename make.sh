@@ -1,4 +1,5 @@
-cd src
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+cd $DIR/src
 if [ -f compiler.jar ];
 then
    cat Utils.js BitArray.js Pack.js manager.js > minifier.js
