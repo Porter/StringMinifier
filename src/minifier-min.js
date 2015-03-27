@@ -320,22 +320,22 @@ function condense(after_words, lookup) {
 	return converted;
 }
 
-function expand(condensed, b4_words) {
+function expand(condensed, b4_words, sep) {
 	result = "";
 	for (i in condensed) {
 		c = condensed[i];
 		if (c instanceof Array) {
-			result += b4_words[c[0]] + " ";
+			result += b4_words[c[0]] + sep;
 		}
 		else {
-			result += c + " ";
+			result += c + sep;
 		}
 	}
 	return result.substring(0, result.length-1);
 }
 
 
-function pack1(condensed) {
+function pack1(condensed, sep) {
 	start = 0;
 	super_condensed = [];
 
@@ -353,7 +353,7 @@ function pack1(condensed) {
 	    start += longest.length;
 
 	    if (typeof longest[0] === "string") {
-		super_condensed.push(longest.join(' '));
+		super_condensed.push(longest.join(sep));
 	    }
 	    else {
 		super_condensed.push([longest[0], longest[longest.length-1]])
@@ -362,7 +362,7 @@ function pack1(condensed) {
 	return super_condensed;
 }
 
-function unpack1(packed) {
+function unpack1(packed, sep) {
 	unpacked = []
 	for (i in packed) {
 		p = packed[i];
@@ -372,7 +372,7 @@ function unpack1(packed) {
 			}
 		}
 		else {
-			words = p.split(' ');
+			words = p.split(sep);
 			for (word in words) {
 				unpacked.push(words[word]);
 			}
@@ -385,7 +385,7 @@ function unpack1(packed) {
 
 
 
-function pack2(unpacked) {
+function pack2(unpacked, sep) {
 
 	packed = "";
 	
@@ -412,7 +412,7 @@ function pack2(unpacked) {
 				if (diff > 0) {
 					
 					diff--;
-					if (diff > 0 || true) {
+					if (diff > 0) {
 						console.log("D" + diff);
 						toConvert.push([[1, 0], false, false]) // delete
 						toConvert.push([toBin(pos + 1 + mod), true, false]);
@@ -430,14 +430,14 @@ function pack2(unpacked) {
 						console.log("A" + diff);
 
 						toConvert.push([[0, 1], false, false]) // additionn
-						toConvert.push([toBin(pos+1+mod), true, false]);
-						toConvert.push([toBin(p[0]), true, false]);
-						toConvert.push([toBin(-diff), true, false]);
+						toConvert.push([toBin(pos+1+mod), true, false]); // insertAt
+						toConvert.push([toBin(p[0]), true, false]); // source origin
+						toConvert.push([toBin(1 + p[1] - p[0]), true, false]); // source length
 
-						var m = NumberOfBits(Math.max(pos+1+mod, p[0], -diff));
+						var m = NumberOfBits(Math.max(pos+1+mod, p[0], 1 + p[1] - p[0]));
 						if (m > size) { size = m; }	
 
-						mod -= diff;
+						mod -= 1 + p[1] - p[0];
 					}
 				}			
 			}
@@ -457,7 +457,7 @@ function pack2(unpacked) {
 			var m = NumberOfBits(Math.max(pos+1+mod, p.length));
 			if (m > size) { size = m; }
 			
-			mod += p.split(' ').length;
+			mod += p.split(sep).length;
 			arrayInARow = false;
 		}
 	}
@@ -486,7 +486,7 @@ function pack2(unpacked) {
 }
 
 
-function unpack2(packed, b4) {
+function unpack2(packed, b4, sep) {
     toR = b4.slice();
     size = packed.charCodeAt(0);
 
@@ -512,7 +512,7 @@ function unpack2(packed, b4) {
 		var length = fromBin(getBits(packed, i, size));
 		i += size;
 		
-		console.log("adding (" + pos + ", " + size + ") at " + insertAt + ": " + b4.slice(pos, pos+length));
+		console.log("adding (" + pos + ", " + length + ") at " + insertAt + ": " + b4.slice(pos, pos+length));
 
 		toR = toR.slice(0,insertAt).concat(b4.slice(pos, pos+length)).concat(toR.slice(insertAt));
 
@@ -541,12 +541,12 @@ function unpack2(packed, b4) {
 
 		console.log("adding string: " + string);
 
-		toR = toR.slice(0,pos).concat(string.split(' ')).concat(toR.slice(pos));		
+		toR = toR.slice(0,pos).concat(string.split(sep)).concat(toR.slice(pos));		
 		i += length*8;
 	}
 
     }
-    return toR.join(' ');   
+    return toR.join(sep);   
 }
 
 
@@ -794,8 +794,10 @@ function Minifier(b4, after) {
 	this.b4 = b4 || "";
 	this.after = after || "";
 
-	this.b4_words = this.b4.split(' ');
-	this.after_words = this.after.split(' ');
+	this.sep = "";
+
+	this.b4_words = this.b4.split(this.sep);
+	this.after_words = this.after.split(this.sep);
 
 	this.level = 0;
 	this.data = b4;
@@ -805,10 +807,10 @@ Minifier.prototype.condense = function(){
 	
 	this.data = getB4Locations(this.b4_words);
 	this.data = condense(this.after_words, this.data);
-	this.data = pack1(this.data);
+	this.data = pack1(this.data, this.sep);
 	console.log(this.data);
 
-	this.data = pack2(this.data);
+	this.data = pack2(this.data, this.sep);
 	
 	return this.data;
 };
@@ -819,11 +821,12 @@ Minifier.prototype.uncondense = function(Data, source){
 	this.data = Data || this.data;
 	if (source) {
 		this.b4 = source;
-		this.b4_words = source.split(' ');
+		this.b4_words = source.split(this.sep);
 	}
 	
-	this.data = unpack2(this.data, this.b4_words);
+	this.data = unpack2(this.data, this.b4_words, this.sep);
 
+	console.log(typeof this.data);
 	return this.data;
 };
 

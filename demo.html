@@ -53,10 +53,15 @@
 
 	function test() {
 		
-		console.log("F");
-		m = new Minifier(document.getElementById('b4').value, document.getElementById('after').value);
-		console.log("D");
+		var b4_ = document.getElementById('b4');
+		var after_ = document.getElementById('after');
+
+		
+		m = new Minifier(b4_.value, after_.value);
 		data = m.condense();
+		
+		
+		compare(document.getElementById('b4').value.length, data.length);
 		
 		var back = m.uncondense(data);
 		
